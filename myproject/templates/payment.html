@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>👟 SneakerHeads - Payment</title>
+    <style>
+        :root {
+            --primary: #FF6B6B;
+            --secondary: #4ECDC4;
+            --accent: #FFD166;
+            --dark: #1A535C;
+            --black: #2D3047;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        .payment-container {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 3rem;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 600px;
+        }
+
+        .logo {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--black);
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .progress-steps {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 3rem;
+            position: relative;
+        }
+
+        .progress-steps::before {
+            content: '';
+            position: absolute;
+            top: 15px;
+            left: 10%;
+            right: 10%;
+            height: 3px;
+            background: #ddd;
+            z-index: 1;
+        }
+
+        .step {
+            text-align: center;
+            position: relative;
+            z-index: 2;
+        }
+
+        .step-number {
+            width: 30px;
+            height: 30px;
+            background: var(--secondary);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 0.5rem;
+            font-weight: bold;
+        }
+
+        .step.active .step-number {
+            background: var(--primary);
+        }
+
+        .step-text {
+            font-size: 0.9rem;
+            color: var(--dark);
+        }
+
+        .order-summary {
+            background: #f8f9fa;
+            padding: 1.5rem;
+            border-radius: 10px;
+            margin-bottom: 2rem;
+        }
+
+        .payment-methods {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin: 2rem 0;
+        }
+
+        .payment-method {
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            padding: 1rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .payment-method:hover {
+            border-color: var(--primary);
+            transform: translateY(-2px);
+        }
+
+        .payment-method.selected {
+            border-color: var(--primary);
+            background: rgba(255, 107, 107, 0.1);
+        }
+
+        .payment-icon {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-back {
+            background: #ddd;
+            color: var(--dark);
+        }
+
+        .btn-pay {
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            color: white;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .upi-input {
+            margin-top: 1rem;
+            display: none;
+        }
+
+        .upi-input input {
+            width: 100%;
+            padding: 1rem;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            font-size: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="payment-container">
+        <div class="logo">👟 SneakerHeads</div>
+        
+        <div class="progress-steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-text">Cart</div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-text">Address</div>
+            </div>
+            <div class="step active">
+                <div class="step-number">3</div>
+                <div class="step-text">Payment</div>
+            </div>
+            <div class="step">
+                <div class="step-number">4</div>
+                <div class="step-text">Success</div>
+            </div>
+        </div>
+
+        <div class="order-summary">
+            <h3>📦 Order Summary</h3>
+            <div id="orderItems"></div>
+            <div style="font-weight: bold; margin-top: 1rem; font-size: 1.2rem;" id="orderTotal"></div>
+        </div>
+
+        <h3 style="margin-bottom: 1rem; color: var(--dark);">💳 Select Payment Method</h3>
+        
+        <div class="payment-methods">
+            <div class="payment-method" onclick="selectPayment('upi')">
+                <div class="payment-icon">📱</div>
+                <div>UPI</div>
+                <small>PhonePe, GPay, Paytm</small>
+            </div>
+            
+            <div class="payment-method" onclick="selectPayment('card')">
+                <div class="payment-icon">💳</div>
+                <div>Card</div>
+                <small>Credit/Debit Card</small>
+            </div>
+            
+            <div class="payment-method" onclick="selectPayment('netbanking')">
+                <div class="payment-icon">🏦</div>
+                <div>Net Banking</div>
+                <small>Internet Banking</small>
+            </div>
+            
+            <div class="payment-method" onclick="selectPayment('wallet')">
+                <div class="payment-icon">👛</div>
+                <div>Wallet</div>
+                <small>Paytm, PhonePe</small>
+            </div>
+        </div>
+
+        <div id="upiInput" class="upi-input">
+            <input type="text" placeholder="Enter UPI ID (e.g., 1234567890@ybl)" id="upiId">
+        </div>
+
+        <div class="btn-group">
+            <button type="button" class="btn btn-back" onclick="goBack()">⬅️ Back to Address</button>
+            <button type="button" class="btn btn-pay" onclick="processPayment()">✅ Pay Now</button>
+        </div>
+    </div>
+
+    <script>
+        let selectedPaymentMethod = '';
+        
+        // Load order summary
+        document.addEventListener('DOMContentLoaded', function() {
+            const cart = JSON.parse(localStorage.getItem('sneakerCart') || '[]');
+            const cartTotal = localStorage.getItem('cartTotal') || '0';
+            const address = JSON.parse(localStorage.getItem('deliveryAddress') || '{}');
+            
+            const orderItems = document.getElementById('orderItems');
+            const orderTotal = document.getElementById('orderTotal');
+            
+            if (cart.length === 0) {
+                orderItems.innerHTML = '<p>No items in cart</p>';
+                window.location.href = '/home/';
+                return;
+            }
+            
+            orderItems.innerHTML = cart.map(item => 
+                `<div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                    <span>${item.name}</span>
+                    <span>₹${item.price}</span>
+                </div>`
+            ).join('');
+            
+            orderTotal.textContent = `Total: ₹${parseFloat(cartTotal).toFixed(2)}`;
+        });
+
+        function selectPayment(method) {
+            selectedPaymentMethod = method;
+            
+            // Remove selected class from all
+            document.querySelectorAll('.payment-method').forEach(el => {
+                el.classList.remove('selected');
+            });
+            
+            // Add selected class to clicked
+            event.target.closest('.payment-method').classList.add('selected');
+            
+            // Show UPI input if UPI selected
+            const upiInput = document.getElementById('upiInput');
+            upiInput.style.display = method === 'upi' ? 'block' : 'none';
+        }
+
+        function goBack() {
+            window.location.href = '/address/';
+        }
+
+        function processPayment() {
+            if (!selectedPaymentMethod) {
+                alert('Please select a payment method');
+                return;
+            }
+            
+            if (selectedPaymentMethod === 'upi') {
+                const upiId = document.getElementById('upiId').value;
+                if (!upiId) {
+                    alert('Please enter your UPI ID');
+                    return;
+                }
+            }
+            
+            // Show processing animation
+            const payBtn = document.querySelector('.btn-pay');
+            payBtn.innerHTML = '🔄 Processing...';
+            payBtn.disabled = true;
+            
+            // Save payment method to session and proceed to success
+            fetch('/save-payment/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({
+                    payment_method: selectedPaymentMethod
+                })
+            }).then(response => {
+                if (response.ok) {
+                    // Redirect to success page which will create the order
+                    window.location.href = '/success/';
+                } else {
+                    alert('Payment processing failed. Please try again.');
+                    payBtn.innerHTML = '✅ Pay Now';
+                    payBtn.disabled = false;
+                }
+            });
+        }
+
+        // Helper function to get CSRF token
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+    </script>
+</body>
+</html>

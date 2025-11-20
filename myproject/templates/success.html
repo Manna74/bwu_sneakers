@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SneakerHub - Order Successful</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Arial', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .success-container {
+            background: white;
+            padding: 3rem;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 600px;
+            text-align: center;
+        }
+
+        .success-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .logo {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 1rem;
+        }
+
+        .success-title {
+            font-size: 2.5rem;
+            color: #27ae60;
+            margin-bottom: 1rem;
+        }
+
+        .success-message {
+            color: #666;
+            margin-bottom: 2rem;
+        }
+
+        .order-details {
+            background: #f8f9fa;
+            padding: 1.5rem;
+            border-radius: 10px;
+            margin-bottom: 2rem;
+            text-align: left;
+        }
+
+        .order-confirmation {
+            background: #e8f5e8;
+            padding: 1.5rem;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            text-align: center;
+            border: 2px solid #27ae60;
+        }
+
+        .order-confirmation h3 {
+            color: #27ae60;
+            margin-bottom: 0.5rem;
+        }
+
+        .order-id {
+            font-size: 1.4rem;
+            font-weight: bold;
+            color: #2c3e50;
+            margin: 0.5rem 0;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.3s;
+        }
+
+        .btn-home {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-track {
+            background: #27ae60;
+            color: white;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .delivery-info {
+            background: #e3f2fd;
+            padding: 1rem;
+            border-radius: 10px;
+            margin-top: 1.5rem;
+            text-align: center;
+            border-left: 4px solid #2196f3;
+        }
+
+        .thank-you {
+            color: #666;
+            font-style: italic;
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid #eee;
+        }
+    </style>
+</head>
+<body>
+    <div class="success-container">
+        <div class="success-icon">🎉</div>
+        <div class="logo">SneakerHub</div>
+        
+        <!-- Order Confirmation Section -->
+        {% if order_id %}
+        <div class="order-confirmation">
+            <h3>Order Confirmed!</h3>
+            <p class="order-id">Order ID: {{ order_id }}</p>
+            <p>We've sent a confirmation email with your order details.</p>
+        </div>
+        {% else %}
+        <div class="order-confirmation" style="background: #fff3cd; border-color: #ffc107;">
+            <h3 style="color: #856404;">Order Processing</h3>
+            <p>Your order is being processed. You will receive confirmation shortly.</p>
+        </div>
+        {% endif %}
+
+        <h1 class="success-title">Order Placed Successfully!</h1>
+        <p class="success-message">Thank you for your purchase. Your order has been confirmed.</p>
+
+        <div class="order-details">
+            <h3>Order Details</h3>
+            <div id="orderSummary"></div>
+            <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #ddd;">
+                <strong>Expected Delivery:</strong> 3-5 business days<br>
+                <strong>Order Support:</strong> +91-9876543210
+            </div>
+        </div>
+
+        <div class="delivery-info">
+            <h4>🚚 Delivery Information</h4>
+            <p>Your order will be shipped within 24 hours</p>
+            <p>Free shipping on all orders | Cash on delivery available</p>
+        </div>
+
+        <div class="btn-group">
+            <a href="/home/" class="btn btn-home">Continue Shopping</a>
+            <button class="btn btn-track" onclick="trackOrder()">Track Order</button>
+        </div>
+
+        <div class="thank-you">
+            <p>Thank you for choosing SneakerHub! We appreciate your business.</p>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const cart = JSON.parse(localStorage.getItem('sneakerCart') || '[]');
+            const cartTotal = localStorage.getItem('cartTotal') || '0';
+            const address = JSON.parse(localStorage.getItem('deliveryAddress') || '{}');
+            
+            const orderSummary = document.getElementById('orderSummary');
+            
+            if (cart.length === 0) {
+                orderSummary.innerHTML = '<p>No order details available</p>';
+                return;
+            }
+            
+            let summaryHTML = '';
+            
+            cart.forEach(item => {
+                summaryHTML += `
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                        <span>${item.name}</span>
+                        <span>₹${item.price.toLocaleString()}</span>
+                    </div>
+                `;
+            });
+            
+            summaryHTML += `
+                <div style="display: flex; justify-content: space-between; border-top: 1px solid #ddd; padding-top: 0.5rem; margin-top: 0.5rem; font-weight: bold;">
+                    <span>Total Amount</span>
+                    <span>₹${parseFloat(cartTotal).toLocaleString()}</span>
+                </div>
+            `;
+            
+            if (address.firstName) {
+                summaryHTML += `
+                    <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #ddd;">
+                        <strong>Delivery Address:</strong><br>
+                        ${address.firstName} ${address.lastName}<br>
+                        ${address.address}<br>
+                        ${address.city}, ${address.state} - ${address.pincode}<br>
+                        Phone: ${address.phone}<br>
+                        Email: ${address.email}
+                    </div>
+                `;
+            }
+            
+            orderSummary.innerHTML = summaryHTML;
+            
+            // Clear localStorage after showing order summary
+            localStorage.removeItem('sneakerCart');
+            localStorage.removeItem('cartTotal');
+            localStorage.removeItem('deliveryAddress');
+        });
+
+        function trackOrder() {
+            {% if order_id %}
+            alert('Track your order with ID: {{ order_id }}\n\nTracking will be available once your order is shipped. You will receive tracking details via email.');
+            {% else %}
+            alert('Your order is being processed. Tracking information will be available once your order is shipped.');
+            {% endif %}
+        }
+
+        // Add confetti effect for celebration
+        setTimeout(() => {
+            if ({% if order_id %}true{% else %}false{% endif %}) {
+                // Simple confetti effect
+                const confetti = document.createElement('div');
+                confetti.innerHTML = '🎉';
+                confetti.style.position = 'fixed';
+                confetti.style.fontSize = '2rem';
+                confetti.style.left = Math.random() * window.innerWidth + 'px';
+                confetti.style.top = '-50px';
+                confetti.style.animation = 'fall 3s linear forwards';
+                document.body.appendChild(confetti);
+                
+                // Add CSS for falling animation
+                const style = document.createElement('style');
+                style.textContent = `
+                    @keyframes fall {
+                        0% { transform: translateY(0) rotate(0deg); }
+                        100% { transform: translateY(100vh) rotate(360deg); }
+                    }
+                `;
+                document.head.appendChild(style);
+                
+                // Remove confetti after animation
+                setTimeout(() => {
+                    confetti.remove();
+                }, 3000);
+            }
+        }, 1000);
+    </script>
+</body>
+</html>
